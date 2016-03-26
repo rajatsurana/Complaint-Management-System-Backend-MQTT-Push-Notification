@@ -1,6 +1,6 @@
 module.exports = {
 
-    'secret': 'iloverajat',
+    'secret': 'iloveComplaint',
     'database': 'mongodb://localhost/compMSysBackend'
 
 };
