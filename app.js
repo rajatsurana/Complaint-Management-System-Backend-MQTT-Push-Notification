@@ -11,6 +11,7 @@ var LocalStrategy   = require('passport-local').Strategy;
 var User   = require('./models/user');
 var Vote  = require('./models/vote');
 var Complaint = require('./models/complaint');// get our mongoose model
+var fs = require('fs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(morgan('tiny'))
@@ -512,6 +513,79 @@ router.route('/changePersonalComplaintStatus')
     });
 });
 */
+router.post('/upload', function(req, res) {
+    //
+var userId=req.body.userId;
+console.log(userId);
+var complaintId=req.body.complaintId;
+console.log(complaintId);
+var separator="/";
+var imageBuffer = new Buffer(req.body.imageFile, 'base64')//decodeBase64Image(req.body.imageFile);
+console.log(imageBuffer);
+var dir =__dirname+"/uploads/images/complaints/"+userId+"/";
+if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir);
+}
+fs.writeFile(dir+complaintId+".png", imageBuffer, function(err) {
+    if(err){
+    res.json({'response':"Error"});
+    }else {
+    res.json({'response':"Saved"});
+    }
+});
+
+/*
+console.log(req.body.image+" :rajat");
+console.log(req.files.image.originalFilename);
+console.log(req.files.image.path);
+    //var userId=req.body.userId;
+    //var complaintId = req.body.complaintId;
+    fs.readFile(req.files.image.path, function (err, data){
+        var dirname = "/images/complaints/"+"1/3.png";//+userId+"/"+complaintId
+        var newPath =  __dirname+"/uploads"+ dirname;//+ req.files.image.originalFilename;
+        fs.writeFile(newPath, data, function (err) {
+            if(err){
+            res.json({'response':"Error"});
+            }else {
+            res.json({'response':"Saved"});
+            }
+        });
+    });
+*/
+});
+router.get('/downloads/:userId/:complaintId', function (req, res){//:file/:userId/:complaintId..get
+        //file = req.params.file;
+        var userId=req.params.userId;
+        var complaintId = req.params.complaintId;
+        var dirname = "/uploads/images/complaints/"+userId+"/"+complaintId+".png";
+        if (fs.existsSync( __dirname+dirname)){
+            var img = fs.readFileSync( __dirname+dirname);
+            res.writeHead(200, {'Content-Type': 'image/png' });
+            res.end(img, 'binary');
+        }else{
+            res.writeHead(200, {'Content-Type': 'image/png' });
+            res.end(null, 'binary');
+        }
+
+
+});
+function decodeBase64Image(dataString) {
+    console.log("rajat: "+dataString.length);
+  var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
+    response = {};
+
+  if (matches.length !== 3) {
+    return new Error('Invalid input string');
+  }
+
+  response.type = matches[1];
+  response.data = new Buffer(matches[2], 'base64');
+
+  return response;
+}
+
+
+
 app.use('/api', router);
 app.listen(3000);
 console.log('Magic happens on port 3000');
