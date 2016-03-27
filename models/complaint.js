@@ -18,7 +18,7 @@ var complaintSchema =new Schema({
     description: String,
     imageUrl:String,
     status:{ type: String, enum: statusType },
-    topics:[String]
+    topic:String
 })
 var Complaint =mongoose.model('Complaint', complaintSchema);
 module.exports = Complaint;
