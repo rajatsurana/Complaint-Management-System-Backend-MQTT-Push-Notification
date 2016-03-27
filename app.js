@@ -297,13 +297,13 @@ router.route('/newComplaint')
           complaint.solver = req.body.solver || 'Other',
           complaint.place = req.body.place||'default',
           complaint.description = req.body.description||'default',
-          complaint.imageUrl = req.body.imageUrl||'default',
+          //complaint.imageUrl = req.body.imageUrl||'default',
           complaint.status = 'Filed'
           if(req.body.solver == 'Dean'){
               complaint.topic= 'Institute';
           }else if(req.body.solver == 'Warden'){
               complaint.topic=req.body.hostel;
-              /*User.findOne({ _id:req.body.userId}, function(err, user) {
+              /*User.findOne({ _id:complaint.userId}, function(err, user) {
                   if (err)
                   {
                       res.send(err)
@@ -415,6 +415,7 @@ router.route('/deleteComplaint')
         }
     });
 });
+
 router.route('/vote')
 .post(function(req, res)
 {
