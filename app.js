@@ -141,6 +141,8 @@ router.route('/login')
   });
 );
 */
+
+
 router.post('/login', function(req, res, next)
 {
     passport.authenticate('local-login', function(err, user, info) {
@@ -303,16 +305,6 @@ router.route('/newComplaint')
               complaint.topic= 'Institute';
           }else if(req.body.solver == 'Warden'){
               complaint.topic=req.body.hostel;
-              /*User.findOne({ _id:complaint.userId}, function(err, user) {
-                  if (err)
-                  {
-                      res.send(err)
-                  }
-                  if(user!=null){
-                      complaint.topic=user.hostel;
-                      //res.json({message:'user found',user:user});
-                  }
-              });*/
           }else{
               complaint.topic= 'Personal';
           }
