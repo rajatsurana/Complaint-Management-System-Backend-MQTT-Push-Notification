@@ -351,7 +351,22 @@ router.route('/searchComplaints/:topic')
         }
     });
 });
+router.route('/solverComplaints/:solver')
+.get(function(req, res)
+{
+    Complaint.find({solver:req.params.solver}, function(err, complaints) {
+        if (err)
+        {
+            res.send(err)
+        }
+        if(complaints!=null){
 
+            res.json({message:'complaints_found', complaints:complaints});
+        }else{
+            res.json({message:'no_complaints_found'});
+        }
+    });
+});
 router.route('/changeComplaintStatus')
 .post(function(req, res)
 {
