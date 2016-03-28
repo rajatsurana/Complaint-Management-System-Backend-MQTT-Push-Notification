@@ -159,31 +159,9 @@ router.post('/login', function(req, res, next)
     })(req, res, next);
 });
 
-router.use(function(req, res, next)
-{
-    var token = req.body.token || req.query.token || req.headers['x-access-token'];
-    if (token) {
-        // verifies secret and checks exp
-        jwt.verify(token, app.get('superSecret'), function(err, decoded) {
-            if (err) {
-                return res.json({ success: false, message: 'failed_to_authenticate_token' });
-            } else {
-                // if everything is good, save to request for use in other routes
-                req.decoded = decoded;
-                next();
-            }
-        });
 
-    } else {
-        // if there is no token
-        // return an error
-        return res.status(403).send({
-            success: false,
-            message: 'no_token_provided'
-        });
 
-    }
-});
+
 
 router.route('/users')
 .get( function(req, res) {
@@ -314,6 +292,22 @@ router.route('/newComplaint')
         if (err){
             res.send(err);
         }
+        //
+
+        var imageBuffer = new Buffer(req.body.imageFile, 'base64')//decodeBase64Image(req.body.imageFile);
+        //console.log(imageBuffer);
+        var dir =__dirname+"/uploads/images/complaints/"+complaint.userId+"/";
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir);
+        }
+        fs.writeFile(dir+complaint._id+".png", imageBuffer, function(err) {
+            if(err){
+            //res.json({'response':"Error"});
+            }else {
+            //res.json({'response':"Saved"});
+            }
+        });
+        //
         //create voteObject************************************if not personal
         if(complaint.solver== 'Warden' || 'Dean'){
             var vote= new Vote();
@@ -335,15 +329,15 @@ router.route('/newComplaint')
 
     });
 });
-router.route('/searchComplaints/:topic')
+router.route('/searchComplaints/:userId/:topic')
 .get(function(req, res)
 {
-    Complaint.find({topic:req.params.topic}, function(err, complaints) {
+    Complaint.find({topic:req.params.topic,userId:req.params.userId}, function(err, complaints) {
         if (err)
         {
             res.send(err)
         }
-        if(complaints!=null){
+        if(complaints.length!=0){
 
             res.json({message:'complaints_found', complaints:complaints});
         }else{
@@ -351,7 +345,38 @@ router.route('/searchComplaints/:topic')
         }
     });
 });
+router.route('/solverComplaints/:solver')
+.get(function(req, res)
+{
+    Complaint.find({solver:req.params.solver}, function(err, complaints) {
+        if (err)
+        {
+            res.send(err)
+        }
+        if(complaints.length!=0){
 
+            res.json({message:'complaints_found', complaints:complaints});
+        }else{
+            res.json({message:'no_complaints_found'});
+        }
+    });
+});
+router.route('/allComplaints')
+.get(function(req, res)
+{
+    Complaint.find({}, function(err, complaints) {
+        if (err)
+        {
+            res.send(err)
+        }
+        if(complaints.length!=0){
+
+            res.json({message:'complaints_found', complaints:complaints});
+        }else{
+            res.json({message:'no_complaints_found'});
+        }
+    });
+});
 router.route('/changeComplaintStatus')
 .post(function(req, res)
 {
