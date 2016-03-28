@@ -141,7 +141,55 @@ router.route('/login')
   });
 );
 */
+router.route('/setup')
+.get( function(req, res) {
+  var user = new User();
+  var rajat = new User({email:'tt1130953',password:user.generateHash('rajat'),whoCreated:'root',hostel:'Girnar',category:'StudentAdmin'});
+  var saurabh = new User({email:'cs1140268',password:user.generateHash('saurabh'),whoCreated:'root',hostel:'Girnar',category:'Student'});
+  var vinay = new User({email:'vinay',password:user.generateHash('vinay'),whoCreated:'root',hostel:'Girnar',category:'Warden'});
+  var jacob = new User({email:'jacob',password:user.generateHash('jacob'),whoCreated:'root',hostel:'Institute',category:'Dean'});
+  var guri = new User({email:'tt1130966',password:user.generateHash('guri'),whoCreated:'root',hostel:'Satpura',category:'StudentAdmin'});
+  var vishnu = new User({email:'cs1140267',password:user.generateHash('vishnu'),whoCreated:'root',hostel:'Satpura',category:'Student'});
+  var amit = new User({email:'amit',password:user.generateHash('amit'),whoCreated:'root',hostel:'Satpura',category:'Warden'});
+  var kurur = new User({email:'kurur',password:user.generateHash('kurur'),whoCreated:'root',hostel:'Institute',category:'Dean'});
+  var complaint1 = new Complaint({userId:'56f8e7a3e81c3b301c1c1026',solver:'Electrician',place:'Ne-03-Girnar',description:'Fan is not working',status:'Filed',topic:'Personal'});
+  var complaint2 = new Complaint({userId:'56f8e7a4e81c3b301c1c1027',solver:'Electrician',place:'Ne-07-Girnar',description:'Switch is not working',status:'Filed',topic:'Personal'});
+  var complaint3 = new Complaint({userId:'56f8e7a3e81c3b301c1c1026',solver:'Carpenter',place:'Ne-03-Girnar',description:'Door latch is broken',status:'Filed',topic:'Personal'});
+  var complaint4 = new Complaint({userId:'56f8e7a4e81c3b301c1c1027',solver:'Carpenter',place:'Ne-07-Girnar',description:'Window glass is broken',status:'Filed',topic:'Personal'});
+  var complaint5 = new Complaint({userId:'56f8e7a3e81c3b301c1c1026',solver:'Plumber',place:'S 51',description:'No water in taps',status:'Filed',topic:'Girnar'});
+  var complaint6 = new Complaint({userId:'56f8e7a4e81c3b301c1c1027',solver:'Plumber',place:'S 46',description:'Leakage in pipes',status:'Filed',topic:'Girnar'});
+  var complaint7 = new Complaint({userId:'56f8e7a3e81c3b301c1c1026',solver:'LAN',place:'Ne-03-Girnar',description:'LAN not working',status:'Filed',topic:'Personal'});
+  var complaint8 = new Complaint({userId:'56f8e7a4e81c3b301c1c1027',solver:'LAN',place:'Ne-07-Girnar',description:'LAN not working',status:'Filed',topic:'Personal'});
+  var complaint9 = new Complaint({userId:'56f8e7a3e81c3b301c1c1026',solver:'Warden',place:'Badminton court',description:'Net is missing',status:'Filed',topic:'Girnar'});
+  var complaint10 = new Complaint({userId:'56f8e7a4e81c3b301c1c1027',solver:'Warden',place:'Mess',description:'Water cooler not working',status:'Filed',topic:'Girnar'});
+  var complaint11 = new Complaint({userId:'56f8e7a3e81c3b301c1c1026',solver:'Dean',place:'Institute',description:'There should be no LAN ban',status:'Filed',topic:'Institute'});
+  var complaint12 = new Complaint({userId:'56f8e7a4e81c3b301c1c1027',solver:'Dean',place:'Play ground',description:'Lights are not working',status:'Filed',topic:'Institute'});
 
+  rajat.save(function(err) {if (err){throw err;}res.json({ message: 'user_created', user: rajat});});
+  saurabh.save(function(err) {if (err){throw err;}res.json({ message: 'user_created', user: saurabh});});
+  vinay.save(function(err) {if (err){throw err;}res.json({ message: 'user_created', user: vinay});});
+  jacob.save(function(err) {if (err){throw err;}res.json({ message: 'user_created', user: jacob});});
+  guri.save(function(err) {if (err){throw err;}res.json({ message: 'user_created', user: guri});});
+  vishnu.save(function(err) {if (err){throw err;}res.json({ message: 'user_created', user: vishnu});});
+  amit.save(function(err) {if (err){throw err;}res.json({ message: 'user_created', user: amit});});
+  kurur.save(function(err) {if (err){throw err;}res.json({ message: 'user_created', user: kurur});});
+
+  complaint1.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint1});});
+  complaint2.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint2});});
+  complaint3.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint3});});
+  complaint4.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint4});});
+  complaint5.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint5});});
+  complaint6.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint6});});
+  complaint7.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint7});});
+  complaint8.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint8});});
+  complaint9.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint9});});
+  complaint10.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint10});});
+  complaint11.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint11});});
+  complaint12.save(function(err) {if (err){throw err;}res.json({ message: 'complaint_created', complaint: complaint12});});
+
+
+
+});
 
 router.post('/login', function(req, res, next)
 {

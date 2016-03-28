@@ -22,3 +22,4 @@ var complaintSchema =new Schema({
 })
 var Complaint =mongoose.model('Complaint', complaintSchema);
 module.exports = Complaint;
+//topic==Personal,<hostel>,Institute
