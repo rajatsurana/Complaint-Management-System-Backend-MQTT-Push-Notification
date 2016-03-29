@@ -345,6 +345,23 @@ router.route('/searchComplaints/:userId/:topic')
         }
     });
 });
+router.route('/noOfVotes/:complaintId')
+.get(function(req, res)
+{
+    Vote.findOne({complaintId:req.params.complaintId}, function(err, vote) {
+        if (err)
+        {
+            res.send(err)
+        }
+        if(vote!=null){
+
+            res.json({message:'vote_found',noOfVote:vote.up});
+        }else{
+            res.json({message:'vote_not_found'});
+        }
+    });
+});
+
 router.route('/solverComplaints/:solver')
 .get(function(req, res)
 {
