@@ -236,17 +236,25 @@ router.route('/deleteUser')
 router.route('/changePassword')
 .post(function(req, res)
 {
-    User.findOne({email:req.body.email,password:user.generateHash(req.body.password)}, function(err, user) {
+    User.findOne({email:req.body.email}, function(err, user) {
         if (err)
         {
             res.send(err)
         }
         if(user!=null){
+          if(user.validPassword(req.body.password)){
             user.password=user.generateHash(req.body.newPassword);
-        user.save(function(err) {
-            if (err) throw err;
-            res.json({message:'password_changed',user:user});
-        });
+            user.save(function(err) {
+                if (err) throw err;
+                res.json({message:'password_changed',user:user});
+            });
+          }else{
+            console.log("password_incorrect");
+            res.json({message:'password_incorrect'});
+
+          }
+
+
         }else{
             res.json({message:'username_or_password_incorrect'});
         }
