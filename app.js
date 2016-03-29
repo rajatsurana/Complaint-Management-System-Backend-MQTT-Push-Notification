@@ -365,6 +365,7 @@ router.route('/noOfVotes/:complaintId')
 router.route('/solverComplaints/:solver')
 .get(function(req, res)
 {
+    if(req.params.solver=='Warden' || req.params.solver=='Dean'){
     Complaint.find({solver:req.params.solver}, function(err, complaints) {
         if (err)
         {
@@ -377,6 +378,21 @@ router.route('/solverComplaints/:solver')
             res.json({message:'no_complaints_found'});
         }
     });
+}else{
+    var solverArray=['Electrician','Carpenter','Plumber','LAN','Other'];
+    Complaint.find({solver:{ $in : solverArray }}, function(err, complaints) {
+        if (err)
+        {
+            res.send(err)
+        }
+        if(complaints.length!=0){
+
+            res.json({message:'complaints_found', complaints:complaints});
+        }else{
+            res.json({message:'no_complaints_found'});
+        }
+    });
+}
 });
 router.route('/allComplaints')
 .get(function(req, res)
@@ -409,7 +425,7 @@ router.route('/changeComplaintStatus')
                     res.send(err);
                 }
 
-                res.json({ message: 'complaint_status_updated', complaint_status:complaint.status});
+                res.json({ message: 'complaint_status_updated', complaint:complaint});
             });
         }else{
             res.json({message:'no_complaint_found'});
