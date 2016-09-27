@@ -94,30 +94,6 @@ function setup() {
   console.log('Mosca server is up and running')
 }
 
-app.get('/setup', function(req, res) {
-  // create sample users
-  var rajat = new User({
-    email: 'Rajat',
-    password: 'pass'
-  });
-  var ujjawal = new User({
-    email: 'Ujjawal',
-    password: 'pass2'
-  });
-  // save the sample users
-  rajat.save(function(err) {
-    if (err) throw err;
-
-    console.log('User1 saved successfully');
-    res.json({ success: true });
-  });
-  ujjawal.save(function(err) {
-    if (err) throw err;
-
-    console.log('User2 saved successfully');
-    res.json({ success: true });
-  });
-});
 passport.use('local-login',new LocalStrategy(
     {
         usernameField : 'email',
@@ -128,19 +104,19 @@ passport.use('local-login',new LocalStrategy(
     {
         User.findOne({ 'email': email }, function(err, user)
         {
-            console.log('rajat: '+email + user.password);
+            //console.log('rajat: '+email + user.password);
             if (err) {
                 //console.log('rajat: '+err);
                 return done(err); }
             if (!user)
             {
 
-                return done(null, false, { message: 'Incorrect username.' });
+                return done(null, false, { message: 'incorrect_username' });
             }
             if (!user.validPassword(password))
             {
                 //console.log('rajat: Incorrect pass');
-                return done(null, false, { message: 'Incorrect password.' });
+                return done(null, false, { message: 'incorrect_password' });
             }
             return done(null, user);
         });
@@ -165,12 +141,14 @@ router.route('/login')
   });
 );
 */
+
+
 router.post('/login', function(req, res, next)
 {
     passport.authenticate('local-login', function(err, user, info) {
         if (err) { return next(err) }
         if (!user) {
-            return res.json(401, { error: 'No user found. Pl0x Sign up' });
+            return res.json(401, { error: 'no_user_found_ask_admin' });
         }
 
         var token = jwt.sign(user, app.get('superSecret'), {
@@ -181,37 +159,18 @@ router.post('/login', function(req, res, next)
     })(req, res, next);
 });
 
-router.use(function(req, res, next)
-{
-    var token = req.body.token || req.query.token || req.headers['x-access-token'];
-    if (token) {
-        // verifies secret and checks exp
-        jwt.verify(token, app.get('superSecret'), function(err, decoded) {
-            if (err) {
-                return res.json({ success: false, message: 'Failed to authenticate token.' });
-            } else {
-                // if everything is good, save to request for use in other routes
-                req.decoded = decoded;
-                next();
-            }
-        });
 
-    } else {
-        // if there is no token
-        // return an error
-        return res.status(403).send({
-            success: false,
-            message: 'No token provided.'
-        });
 
-    }
-});
+
 
 router.route('/users')
 .get( function(req, res) {
   User.find({}, function(err, users) {
-
-    res.json({Users : users});
+      if (err)
+      {
+          res.send(err)
+      }
+    res.json({users : users});
   });
 })
 .post( function(req, res) {
@@ -232,26 +191,26 @@ router.route('/users')
                     res.send(err);
                 }
 
-                res.json({ message: 'user created', user: user});
+                res.json({ message: 'user_created', user: user});
             });
         }else{
-            res.json({message:'user already exists'});
+            res.json({message:'user_already_exists'});
         }
     });
 });
 
-router.route('/findUser')
-.post( function(req, res) {
+router.route('/findUsers/:whoCreated')
+.get( function(req, res) {
 
-  User.findOne({email:req.body.email}, function(err, user) {
+  User.find({whoCreated:req.params.whoCreated}, function(err, users) {
       if (err)
       {
           res.send(err)
       }
-      if(user!=null){
-          res.json({message:'user found',user:user});
+      if(users!=null){
+          res.json({message:'users_found',users:users});
       }else{
-          res.json({message:'user not exist'});
+          res.json({message:'no_users_found'});
       }
   });
 });
@@ -267,26 +226,53 @@ router.route('/deleteUser')
         if(user!=null){
         user.remove(function(err) {
             if (err) throw err;
-        res.json({message:'User successfully deleted!'});
+        res.json({message:'user_deleted'});
         });
         }else{
-            res.json({message:'Username or password incorrect'});
+            res.json({message:'username_or_password_incorrect'});
         }
     });
 });
-router.route('/myComplaints')
+router.route('/changePassword')
 .post(function(req, res)
 {
-    Complaint.find({userId:req.body.userId}, function(err, complaints) {
+    User.findOne({email:req.body.email}, function(err, user) {
+        if (err)
+        {
+            res.send(err)
+        }
+        if(user!=null){
+          if(user.validPassword(req.body.password)){
+            user.password=user.generateHash(req.body.newPassword);
+            user.save(function(err) {
+                if (err) throw err;
+                res.json({message:'password_changed',user:user});
+            });
+          }else{
+            console.log("password_incorrect");
+            res.json({message:'password_incorrect'});
+
+          }
+
+
+        }else{
+            res.json({message:'username_or_password_incorrect'});
+        }
+    });
+});
+router.route('/myComplaints/:userId')
+.get(function(req, res)
+{
+    Complaint.find({userId:req.params.userId}, function(err, complaints) {
         if (err)
         {
             res.send(err)
         }
         if(complaints.length!=0){//complaints!=null
 
-            res.json({message:'complaints found', complaints:complaints});
+            res.json({message:'complaints_found', complaints:complaints});
         }else{
-            res.json({message:'no complaints found'});
+            res.json({message:'no_complaints_found'});
         }
     });
 });
@@ -299,14 +285,37 @@ router.route('/newComplaint')
           complaint.solver = req.body.solver || 'Other',
           complaint.place = req.body.place||'default',
           complaint.description = req.body.description||'default',
-          complaint.imageUrl = req.body.imageUrl||'default',
-          complaint.status = 'Filed',
-          complaint.topics= req.body.topics//JSON.parse(req.body.topics)
+          //complaint.imageUrl = req.body.imageUrl||'default',
+          complaint.status = 'Filed'
+          if(req.body.solver == 'Dean'){
+              complaint.topic= 'Institute';
+          }else if(req.body.solver == 'Warden'){
+              complaint.topic=req.body.hostel;
+          }else{
+              complaint.topic= 'Personal';
+          }
+          //JSON.parse(req.body.topics)
 
     complaint.save(function(err) {
         if (err){
             res.send(err);
         }
+        //
+
+        var imageBuffer = new Buffer(req.body.imageFile, 'base64')//decodeBase64Image(req.body.imageFile);
+        //console.log(imageBuffer);
+        var dir =__dirname+"/uploads/images/complaints/"+complaint.userId+"/";
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir);
+        }
+        fs.writeFile(dir+complaint._id+".png", imageBuffer, function(err) {
+            if(err){
+            //res.json({'response':"Error"});
+            }else {
+            //res.json({'response':"Saved"});
+            }
+        });
+        //
         //create voteObject************************************if not personal
         if(complaint.solver== 'Warden' || 'Dean'){
             var vote= new Vote();
@@ -319,32 +328,96 @@ router.route('/newComplaint')
                   if (err){
                       res.send(err);
                   }
-                  res.json({ message: 'complaint created', complaint: complaint, vote:vote});
+                  res.json({ message: 'complaint_created', complaint: complaint, vote:vote});
               });
         }else{
-            res.json({ message: 'complaint created', complaint: complaint});
+            res.json({ message: 'complaint_created', complaint: complaint});
         }
 
 
     });
 });
-router.route('/searchComplaints')
-.post(function(req, res)
+router.route('/searchComplaints/:userId/:topic')
+.get(function(req, res)
 {
-    Complaint.find({topics:req.body.topic}, function(err, complaints) {
+    Complaint.find({topic:req.params.topic,userId:req.params.userId}, function(err, complaints) {
         if (err)
         {
             res.send(err)
         }
-        if(complaints!=null){
+        if(complaints.length!=0){
 
-            res.json({message:'complaints found', complaints:complaints});
+            res.json({message:'complaints_found', complaints:complaints});
         }else{
-            res.json({message:'no complaints found'});
+            res.json({message:'no_complaints_found'});
+        }
+    });
+});
+router.route('/noOfVotes/:complaintId')
+.get(function(req, res)
+{
+    Vote.findOne({complaintId:req.params.complaintId}, function(err, vote) {
+        if (err)
+        {
+            res.send(err)
+        }
+        if(vote!=null){
+
+            res.json({message:'vote_found',noOfVote:vote.up});
+        }else{
+            res.json({message:'vote_not_found'});
         }
     });
 });
 
+router.route('/solverComplaints/:solver')
+.get(function(req, res)
+{
+    if(req.params.solver=='Warden' || req.params.solver=='Dean'){
+    Complaint.find({solver:req.params.solver}, function(err, complaints) {
+        if (err)
+        {
+            res.send(err)
+        }
+        if(complaints.length!=0){
+
+            res.json({message:'complaints_found', complaints:complaints});
+        }else{
+            res.json({message:'no_complaints_found'});
+        }
+    });
+}else{
+    var solverArray=['Electrician','Carpenter','Plumber','LAN','Other'];
+    Complaint.find({solver:{ $in : solverArray }}, function(err, complaints) {
+        if (err)
+        {
+            res.send(err)
+        }
+        if(complaints.length!=0){
+
+            res.json({message:'complaints_found', complaints:complaints});
+        }else{
+            res.json({message:'no_complaints_found'});
+        }
+    });
+}
+});
+router.route('/allComplaints')
+.get(function(req, res)
+{
+    Complaint.find({}, function(err, complaints) {
+        if (err)
+        {
+            res.send(err)
+        }
+        if(complaints.length!=0){
+
+            res.json({message:'complaints_found', complaints:complaints});
+        }else{
+            res.json({message:'no_complaints_found'});
+        }
+    });
+});
 router.route('/changeComplaintStatus')
 .post(function(req, res)
 {
@@ -360,25 +433,25 @@ router.route('/changeComplaintStatus')
                     res.send(err);
                 }
 
-                res.json({ message: 'status updated', status:complaint.status});
+                res.json({ message: 'complaint_status_updated', complaint:complaint});
             });
         }else{
-            res.json({message:'no complaint found'});
+            res.json({message:'no_complaint_found'});
         }
     });
 });
-router.route('/complaintDescription')
-.post(function(req, res)
+router.route('/complaintDescription/:complaintId')
+.get(function(req, res)
 {
-    Complaint.findOne({ _id:req.body.complaintId}, function(err, complaint) {
+    Complaint.findOne({ _id:req.params.complaintId}, function(err, complaint) {
         if (err)
         {
             res.send(err)
         }
         if(complaint!=null){
-            res.json({message:'complaint found',complaint:complaint});
+            res.json({message:'complaint_found',complaint:complaint});
         }else{
-            res.json({message:'no complaint found'});
+            res.json({message:'no_complaint_found'});
         }
     });
 });
@@ -393,13 +466,14 @@ router.route('/deleteComplaint')
         if(complaint!=null){
         complaint.remove(function(err) {
             if (err) throw err;
-        res.json({message:'Complaint successfully deleted!'});
+            res.json({message:'complaint_successfully_deleted'});
         });
         }else{
-            res.json({message:'Complaint not exist'});
+            res.json({message:'complaint_not_exist'});
         }
     });
 });
+
 router.route('/vote')
 .post(function(req, res)
 {
@@ -452,13 +526,13 @@ router.route('/vote')
                         res.send(err);
                     }
 
-                    res.json({ message: 'voted', vote: vote});
+                    res.json({ message: 'voted_success', vote: vote});
                 });
             }else{
-                res.json({message:'voting over'});//if canVote==false
+                res.json({message:'voting_over'});//if canVote==false
             }
         }else{
-            res.json({message:'no voting started'});
+            res.json({message:'no_voting_started'});
         }
     });
 });
@@ -481,10 +555,10 @@ router.route('/voteStatusChange')
                     res.send(err);
                 }
 
-                res.json({ message: 'status changed', vote: vote});
+                res.json({ message: 'vote_status_changed', vote: vote});
             });
         }else{
-            res.json({message:'no voting started'});
+            res.json({message:'no_voting_started'});
         }
     });
 });
@@ -516,12 +590,12 @@ router.route('/changePersonalComplaintStatus')
 router.post('/upload', function(req, res) {
     //
 var userId=req.body.userId;
-console.log(userId);
+//console.log(userId);
 var complaintId=req.body.complaintId;
-console.log(complaintId);
+//console.log(complaintId);
 var separator="/";
 var imageBuffer = new Buffer(req.body.imageFile, 'base64')//decodeBase64Image(req.body.imageFile);
-console.log(imageBuffer);
+//console.log(imageBuffer);
 var dir =__dirname+"/uploads/images/complaints/"+userId+"/";
 if (!fs.existsSync(dir)){
     fs.mkdirSync(dir);
@@ -562,13 +636,11 @@ router.get('/downloads/:userId/:complaintId', function (req, res){//:file/:userI
             var img = fs.readFileSync( __dirname+dirname);
             res.writeHead(200, {'Content-Type': 'image/png' });
             res.end(img, 'binary');
-        }else{
-            res.writeHead(200, {'Content-Type': 'image/png' });
-            res.end(null, 'binary');
         }
 
 
 });
+/*
 function decodeBase64Image(dataString) {
     console.log("rajat: "+dataString.length);
   var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
@@ -583,8 +655,8 @@ function decodeBase64Image(dataString) {
 
   return response;
 }
-
-
+*/
+//change password, add comments
 
 app.use('/api', router);
 app.listen(3000);

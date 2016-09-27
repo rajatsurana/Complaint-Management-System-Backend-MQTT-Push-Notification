@@ -3,11 +3,11 @@ var bcrypt   = require('bcrypt-nodejs');
 var Schema = mongoose.Schema;
 
 var hostelType = {
-  values: 'Girnar Udaigiri Satpura Zanskar Shivalik Vindhyanchal Jwalamukhi Aravali Karakoram Nilgiri Kumaon Kailash Himadri'.split(' '),
+  values: 'Girnar Udaigiri Satpura Zanskar Shivalik Vindhyanchal Jwalamukhi Aravali Karakoram Nilgiri Kumaon Kailash Himadri Institute'.split(' '),
   message: 'enum validator failed for path `{PATH}` with value `{VALUE}`'
 }
 var categoryType = {
-  values: 'StudentAdmin Student Solver'.split(' '),
+  values: 'StudentAdmin Student Warden Dean'.split(' '),
   message: 'enum validator failed for path `{PATH}` with value `{VALUE}`'
 }
 

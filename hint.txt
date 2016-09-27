@@ -1,0 +1,14 @@
+{
+    "message": "user_created",
+    "user": {
+        "__v": 0,
+        "whoCreated": "56f7e2a2100a5f3c1ea2f986",
+        "category": "Warden",
+        "hostel": "Satpura",
+        "password": "$2a$08$BvgcUqzU3bYiO5BSWJOBaOIkX0M8w/mDrrQPpoUuPNPtpstYCXx5q",
+        "email": "vinay",
+        "_id": "56f81ecbf577efb40c983c66"
+    }
+}
+
+//vinay
